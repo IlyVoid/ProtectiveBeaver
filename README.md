@@ -2,16 +2,15 @@
 
 ---
 
-Protective Beaver is a security script designed to help you enhance the security of your Arch Linux system. It automates various tasks like malware scanning, file permission checking, log analysis, firewall status verification, and more.
+Protective Beaver is a comprehensive security script designed to harden your Arch Linux system. It automates security checks, vulnerability scans, and system hardening tasks with minimal user interaction.
 
 This script will:
 
-- Check if essential security tools like ClamAV, rkhunter, and fail2ban are installed.
-- Scan your system for malware using ClamAV.
-- Check file permissions and allow you to fix any weak permissions.
-- Scan system logs for suspicious activity (e.g., brute force attempts).
-- Ensure your firewall (UFW) is enabled and provide an option to enable it.
-- Set up reminders for periodic security checks via cron.
+- Verify installation of security tools (ClamAV, rkhunter, fail2ban)
+- Perform malware scans and rootkit detection
+- Analyze system configurations and network exposure
+- Implement security best practices with user consent
+- Generate structured audit logs for future review
 
 ---
 
@@ -20,6 +19,7 @@ This script will:
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Log File Structure](#log-file-structure) 
 - [Setting Up Reminders](#setting-up-reminders)
 - [Script Overview](#script-overview)
 - [Troubleshooting](#troubleshooting)
@@ -29,153 +29,169 @@ This script will:
 
 ## Features
 
-- **Security Tool Check**: Verifies if ClamAV, rkhunter, and fail2ban are installed.
-- **ClamAV Malware Scan**: Scans your system recursively to check for malware.
-- **File Permission Check**: Checks for files with overly permissive access and offers to fix them.
-- **Log Analysis**: Scans system logs for suspicious activities like brute-force login attempts or exploits.
-- **Firewall Check**: Checks if UFW (Uncomplicated Firewall) is enabled and allows enabling it if not.
-- **Reminder Setup**: Allows you to set up weekly or monthly reminders to run the script automatically using cron.
+### Security Hardening
+- **Firewall Management**: Automatically enable UFW & close risky ports (22/23/3306)
+- **Service Hardening**: Detect and disable unnecessary services (bluetooth/cups)
+- **Access Control**: 
+  - Fix insecure file permissions (777/666)
+  - Verify AppArmor status (Arch Linux compatible)
+  - Audit password policies
+
+### Threat Detection
+- **Malware Scanning**: Full-system scan with ClamAV
+- **Rootkit Detection**: rkhunter system inspection
+- **Network Analysis**: Identify suspicious open ports
+- **SSH Audit**: Check for password authentication risks
+
+### Maintenance Automation
+- Update availability checks
+- Cron-based reminder system
+- Auditd service activation
+- Structured logging of all actions
 
 ---
 
 ## Installation
 
 ### Step 1: Install Dependencies
+```bash
+sudo pacman -S clamav rkhunter fail2ban ufw audit python python-pip
+```
 
-Before running the script, make sure your system has the necessary security tools installed.
+### Step 2: Install Python Requirements
+```bash
+pip install rich
+```
 
-1. **Install ClamAV, rkhunter, and fail2ban**: Run the following command to install the required tools:
-    ```bash
-    sudo pacman -S clamd rkhunter fail2ban ufw
-    ```
-
-2. **Install Python 3 and pip (if not already installed)**:
-    ```bash
-    sudo pacman -S python python-pip
-    ```
-
-3. **Install Rich (for beautiful output)**: The script uses the `rich` Python package for beautiful console output. Install it via pip:
-    ```bash
-    pip install rich
-    ```
-
-### Step 2: Download the Script
-
-Clone or download the script to your desired directory. For example:
+### Step 3: Download & Configure
 ```bash
 git clone https://github.com/yourusername/ProtectiveBeaver.git
 cd ProtectiveBeaver
-```
-
-Alternatively, if you don't have Git:
-
-    Download the ZIP file from the GitHub repository.
-    Extract it to a directory on your system.
-
-### Step 3: Make the Script Executable
-
-After downloading or cloning the script, make it executable:
-
-```bash
 chmod +x PB.py
 ```
 
-### Step 4: Run the Script
+### Usage
 
-To run the script, simply execute it with Python:
+Run with elevated privileges:
 ```bash
-python3 PB.py
+sudo ./PB.py
 ```
 
-You may need to run the script with sudo depending on the permissions of the files and directories being scanned:
-```bash
-sudo python3 PB.py
+Typical Workflow:
+
+    Tool verification check
+
+    Firewall status assessment
+
+    Full malware scan
+
+    Network port analysis
+
+    Security update check
+
+    SSH configuration audit
+
+    File permission review
+
+    Rootkit detection scan
+
+    Service cleanup
+
+    Security framework check
+
+    Password policy audit
+
+    Reminder setup
+
+Interactive Features:
+
+    Port closure confirmation
+
+    Permission repair prompts
+
+    Service disablement requests
+
+    Automatic firewall activation
+
+    Cron job scheduling
+
+Log File Structure
+
+Logs are stored in security_script.log with clear sectioning:
+```log
+
+2023-10-10 12:00:00 - INFO - 
+==================================================
+CHECKING REQUIRED TOOLS
+==================================================
+2023-10-10 12:00:01 - INFO - All required security tools are installed.
+
+==================================================
+CHECKING OPEN PORTS  
+==================================================
+2023-10-10 12:00:15 - WARNING - Suspicious open port found: tcp LISTEN 0 128 0.0.0.0:22
+2023-10-10 12:00:20 - INFO - Port 22 has been closed.
 ```
 
----
+## Setting Up Reminders
 
-## Usage
+The script can configure automatic scans via cron:
 
-When you run the script, it will perform several checks and tasks:
+    Weekly: Every Sunday at midnight
 
-- Check for Missing Tools: The script will check if ClamAV, rkhunter, and fail2ban are installed. If any of them are missing, the script will suggest how to install them.
+    Monthly: First day of month at midnight
 
-- Run ClamAV Malware Scan: It will perform a system-wide scan for malware using clamscan. You will see a report on any infected files found.
-
-- File Permission Check: It will check the permissions of all files on your system and identify files with weak permissions (e.g., files with 777 or 666 permissions). You will have the option to fix these permissions automatically.
-
-- Log Analysis: The script will check the system logs for any suspicious activity such as failed login attempts, segfaults, and other anomalies.
-
-- Firewall Check: It will check if ufw (Uncomplicated Firewall) is active. If it's not, it will offer to enable it for you.
-
-- Reminder Setup: After running the script, you will have the option to set up a cron job to run the script automatically at regular intervals (weekly or monthly).
-
-### Sample Output:
-
-
-[bold purple]Protective Beaver[/bold purple]
-- Checking for missing security tools...
-[green]All required security tools are installed.[/green]
-- Running ClamAV scan...
-[green]No malware found.[/green]
-- Checking file permissions...
-[green]No weak file permissions found.[/green]
-- Checking logs for suspicious activity...
-[red]Suspicious log entry detected:[/red] Failed password for user root from 192.168.1.10
-- Checking firewall status...
-[green]Firewall enabled.[/green]
-- Would you like to set up regular reminders to run this script? (weekly/monthly/n): weekly
-[green]Reminder set to run the script at: 0 0 * * 0[/green]
-
-
-# Setting Up Reminders
-
-The script offers the option to set up regular reminders using cron, which will automatically run the script at specified intervals (weekly or monthly).
-
-When prompted, you can choose between:
-
-    weekly: The script will run every Sunday at midnight.
-    monthly: The script will run on the first day of every month at midnight.
-    no: No reminders will be set.
-
-To set up the reminder:
-
-    Choose your preferred interval.
-    The script will automatically add an entry to your crontab.
-
-If you need to manually edit your cron jobs, you can open your crontab by running:
-
+To modify reminders:
 ```bash
 crontab -e
 ```
 
-## Script Overview
+# Script Overview
+## Core Functions
+    ------------------------------------------------------------------------|
+    Function	              |    Purpose                              |
+    check_tools()	              |    Verify security tool installation    |
+    check_firewall()	      |    Configure UFW firewall               |
+    scan_files()	              |    Conduct ClamAV malware scan          |
+    check_open_ports()	      |    identify/close risky ports           |
+    check_ssh_security()	      |    Audit SSH configurations             |
+    check_rootkits()	      |    Perform rkhunter scan                |
+    enable_auditd()	              |    Activate system auditing             |
+    Interactive Modules           |                                         |      
+    Function Action               |                                         |
+    check_unnecessary_services()  |	   Disable vulnerable services          |
+    check_selinux_apparmor()      |    Check MAC frameworks                 |
+    check_password_policy()	      |    Verify password requirements         |
+    ------------------------------------------------------------------------|
 
-The script is divided into several functions:
+Common Issues:
 
-    check_tools(): Verifies if required tools are installed.
-    scan_files(): Runs ClamAV to check for malware on the system.
-    check_file_permissions(): Checks for files with weak permissions and offers to fix them.
-    check_logs(): Scans system logs for suspicious activity.
-    firewall_status(): Checks if UFW is active and offers to enable it.
-    enable_reminders(): Prompts the user to set up cron-based reminders.
-    setup_reminder(): Adds a cron job to run the script at a specified interval.
+    Missing sestatus: Expected on Arch Linux - SELinux not used
 
-The script uses the rich package for colorful and formatted output to make the console output more user-friendly.
-Troubleshooting
+    UFW Rule Conflicts: Check existing rules with sudo ufw status
 
-    Missing Dependencies: If you get errors about missing dependencies, make sure all required packages (clamav, rkhunter, fail2ban, ufw, python3, rich) are installed.
+    AppArmor Not Found: Install with sudo pacman -S apparmor
 
-    Permission Issues: Some checks (like scanning files or accessing system logs) require superuser (root) privileges. Run the script with sudo if needed:
-
+Debugging Tips:
 ```bash
-sudo python3 PB.py
+tail -f security_script.log  # Monitor real-time logs
+sudo ufw reload               # Force firewall refresh
+aa-status                     # Check AppArmor status
 ```
-
-Firewall Issues: If UFW is not installed or not working, install it using:
-
-    sudo pacman -S ufw
 
 # Contributing
 
-We welcome contributions to improve the script! If you would like to help, please fork the repository, make your changes, and submit a pull request.
+We welcome security enhancements and Arch Linux improvements!
+Guidelines:
+
+    Fork repository
+
+    Create feature branch
+
+    Submit pull request with:
+
+        Code changes
+
+        Updated documentation
+
+        Test cases
