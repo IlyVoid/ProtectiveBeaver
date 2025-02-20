@@ -22,6 +22,17 @@ def log_section(title):
     logging.info(f"{title.upper()}")
     logging.info(f"{'=' * 50}")
 
+def install_tools(missing_tools):
+    """Install missing security tools."""
+    console.print(f"[yellow]Installing missing tools: {', '.join(missing_tools)}[/yellow]")
+    try:
+        subprocess.run(["sudo", "pacman", "-S", "--noconfirm"] + missing_tools, check=True)
+        console.print("[green]Missing tools installed successfully.[/green]")
+        logging.info(f"Installed missing tools: {', '.join(missing_tools)}")
+    except subprocess.CalledProcessError as e:
+        console.print(f"[red]Error installing tools: {e}[/red]")
+        logging.error(f"Error installing tools: {e}")
+
 def check_tools():
     """Check if required security tools are installed."""
     log_section("Checking Required Tools")
@@ -34,8 +45,12 @@ def check_tools():
     
     if missing_tools:
         console.print(f"[yellow]Warning:[/yellow] Missing security tools: {', '.join(missing_tools)}")
-        console.print(f"To install, use: [cyan]sudo pacman -S {', '.join(missing_tools)}[/cyan]")
-        logging.warning(f"Missing security tools: {', '.join(missing_tools)}")
+        install = Prompt.ask("Do you want to install missing tools? (y/n)", choices=["y", "n"], default="y")
+        if install.lower() == "y":
+            install_tools(missing_tools)
+        else:
+            console.print("[yellow]Skipping installation of missing tools.[/yellow]")
+            logging.warning(f"Missing tools not installed: {', '.join(missing_tools)}")
     else:
         console.print("[green]All required security tools are installed.[/green]")
         logging.info("All required security tools are installed.")
@@ -137,15 +152,10 @@ def check_for_updates():
     """Check if system updates are available."""
     log_section("Checking for System Updates")
     try:
-        result = subprocess.run(["sudo", "pacman", "-Sy", "--noconfirm"], capture_output=True, text=True)
+        # Refresh package list
+        subprocess.run(["sudo", "pacman", "-Sy", "--noconfirm"], capture_output=True, text=True)
         
-        if "error" in result.stderr:
-            console.print("[red]Error checking for updates.[/red]")
-            logging.error("Error checking for updates.")
-        else:
-            console.print("[green]System update check complete.[/green]")
-            logging.info("System update check complete.")
-            
+        # Check for updates
         update_available = subprocess.run(["sudo", "pacman", "-Qu"], capture_output=True, text=True)
         
         if update_available.stdout.strip():
@@ -153,8 +163,8 @@ def check_for_updates():
             console.print(update_available.stdout)
             logging.warning(f"Updates available: {update_available.stdout}")
         else:
-            console.print("[green]No updates available.[/green]")
-            logging.info("No updates available.")
+            console.print("[green]System is up-to-date.[/green]")
+            logging.info("System is up-to-date.")
     except subprocess.CalledProcessError as e:
         console.print(f"[red]Error checking for updates: {e}[/red]")
         logging.error(f"Error checking for updates: {e}")
