@@ -36,7 +36,7 @@ def install_tools(missing_tools):
 def check_tools():
     """Check if required security tools are installed."""
     log_section("Checking Required Tools")
-    tools = {"ClamAV": "clamscan", "rkhunter": "rkhunter", "fail2ban": "fail2ban-client", "ufw": "ufw", "auditd": "auditctl"}
+    tools = {"ClamAV": "clamscan", "rkhunter": "rkhunter --version", "fail2ban": "fail2ban-client", "ufw": "ufw", "auditd": "auditctl"}
     missing_tools = []
     
     for name, cmd in tools.items():
@@ -74,7 +74,8 @@ def check_firewall():
             console.print("[red]Warning:[/red] Firewall is not enabled.")
             enable = Prompt.ask("Do you want to enable the firewall? (y/n)", choices=["y", "n"], default="y")
             if enable.lower() == "y":
-                subprocess.run(["sudo", "ufw", "enable"], check=True)
+                subprocess.run(["sudo", "systemctl", "enable", "ufw"], check=True)
+                subprocess.run(["sudo", "systemctl", "start", "ufw"], check=True)
                 console.print("[green]Firewall has been enabled.[/green]")
                 logging.info("Firewall has been enabled.")
             else:
@@ -115,7 +116,7 @@ def check_open_ports():
         console.print(result.stdout)
         
         # Look for suspicious open ports or known ports that shouldn't be open
-        suspicious_ports = ['22', '23', '3306']  # Example of ports (SSH, Telnet, MySQL) that shouldn't be open by default
+        suspicious_ports = ['21', '22', '23', '25', '53', '80', '137', '139', '443', '1433', '3306', '3389', '8080', '8443' ]
         for line in result.stdout.splitlines():
             for port in suspicious_ports:
                 if f":{port}" in line:
